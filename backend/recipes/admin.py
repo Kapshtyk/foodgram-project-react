@@ -20,7 +20,8 @@ class TagAdmin(admin.ModelAdmin):
     list_filter = ("name",)
     empty_value_display = "-empty-"
     ordering = ("pk",)
-    prepopulated_fields = {'slug': ('name',)}      
+    prepopulated_fields = {"slug": ("name",)}
+
 
 admin.site.register(Tag, TagAdmin)
 
