@@ -9,7 +9,7 @@ from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer,
 )
 
-from recipes.models import Ingredient, Tag, Recipe, RecipeIngredient
+from recipes.models import Ingredient, Tag, Recipe, RecipeIngredient, Favorite
 from .services import add_ingredients_to_recipe
 
 User = get_user_model()
@@ -58,6 +58,23 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("email", "id", "username", "first_name", "last_name")
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    recipe = serializers.HiddenField(default=None)
+
+    def validate_recipe(self, value):
+        recipe_id = self.context["request"].parser_context["kwargs"][
+            "recipe_id"
+        ]
+        return get_object_or_404(Recipe, pk=recipe_id)
+
+    class Meta:
+        fields = ("user", "recipe")
+        model = Favorite
+
+    # реализовать удаление рецепта из избранного
 
 
 class RecipeSerializer(serializers.ModelSerializer):

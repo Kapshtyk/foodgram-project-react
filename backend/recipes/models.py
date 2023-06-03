@@ -55,3 +55,27 @@ class RecipeIngredient(models.Model):
 
     class Meta:
         verbose_name_plural = "Recipe Ingredients"
+
+    def __str__(self):
+        return f"{self.ingredient} ({self.quantity})"
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="favorites"
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="favorites"
+    )
+
+    class Meta:
+        unique_together = ["user", "recipe"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"],
+                name="unique_favorite",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.recipe}"
