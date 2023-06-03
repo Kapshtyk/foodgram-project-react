@@ -1,12 +1,28 @@
+import base64
+from django.forms import ValidationError
+from django.shortcuts import get_object_or_404
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer,
 )
 
 from recipes.models import Ingredient, Tag, Recipe, RecipeIngredient
+from .services import add_ingredients_to_recipe
 
 User = get_user_model()
+
+
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith("data:image"):
+            format, imgstr = data.split(";base64,")
+            ext = format.split("/")[-1]
+            data = ContentFile(base64.b64decode(imgstr), name="temp." + ext)
+
+        return super().to_internal_value(data)
 
 
 class UserSerializer(DjoserUserCreateSerializer):
@@ -47,6 +63,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = AuthorSerializer(read_only=True)
+    image = Base64ImageField(required=True)
     ingredients = serializers.SerializerMethodField()
 
     class Meta:
@@ -67,10 +84,54 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe_ingredients = RecipeIngredient.objects.filter(recipe=obj)
         ingredient_data = []
         for recipe_ingredient in recipe_ingredients:
-            ingredient_data.append({
-                "id": recipe_ingredient.ingredient.id,
-                "name": recipe_ingredient.ingredient.name,
-                "measurement_unit": recipe_ingredient.ingredient.measurement_unit,
-                "amount": recipe_ingredient.quantity,
-            })
+            ingredient_data.append(
+                {
+                    "id": recipe_ingredient.ingredient.id,
+                    "name": recipe_ingredient.ingredient.name,
+                    "measurement_unit": recipe_ingredient.ingredient.measurement_unit,
+                    "amount": recipe_ingredient.quantity,
+                }
+            )
         return ingredient_data
+
+    def validate(self, data):
+        tags_data = self.initial_data.get("tags")
+        ingredients_data = self.initial_data.get("ingredients")
+
+        if not tags_data or not ingredients_data:
+            raise ValidationError("Tags and ingredients are required.")
+
+        tags = Tag.objects.filter(id__in=tags_data)
+        ingredient_ids = [
+            ingredient_data.get("id") for ingredient_data in ingredients_data
+        ]
+        ingredients = Ingredient.objects.filter(id__in=ingredient_ids)
+
+        if len(tags_data) != len(tags) or len(ingredients_data) != len(
+            ingredients
+        ):
+            raise ValidationError("Invalid tags or ingredients.")
+
+        data["tags"] = tags_data
+        data["ingredients"] = ingredients_data
+        return data
+
+    def create(self, validated_data):
+        tag_ids = validated_data.pop("tags", [])
+        tags = Tag.objects.filter(id__in=tag_ids)
+        ingredients = validated_data.pop("ingredients", [])
+        request = self.context["request"]
+        recipe = Recipe.objects.create(author=request.user, **validated_data)
+        recipe.tags.set(tags)
+        add_ingredients_to_recipe(recipe, ingredients)
+        return recipe
+
+    def update(self, instance, validated_data):
+        tag_ids = validated_data.pop("tags", [])
+        tags = Tag.objects.filter(id__in=tag_ids)
+        ingredients = validated_data.pop("ingredients", [])
+        instance.tags.set(tags)
+        add_ingredients_to_recipe(instance, ingredients)
+        return super().update(instance, validated_data)
+
+    # реализовать удаление рецепта
