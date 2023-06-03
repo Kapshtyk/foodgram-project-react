@@ -18,8 +18,6 @@ class User(AbstractUser):
 
     class Meta:
         ordering = ("email",)
-        verbose_name = "Пользователь"
-        verbose_name_plural = "Пользователи"
 
     def __str__(self):
         return self.email
@@ -39,8 +37,6 @@ class Subscription(models.Model):
                 fields=["author", "user"], name="unique_following"
             )
         ]
-        verbose_name = "Подписка"
-        verbose_name_plural = "Подписки"
 
     def __str__(self):
-        return f"{self.author} подписан на {self.user}"
+        return f"{self.author} follows {self.user}"
