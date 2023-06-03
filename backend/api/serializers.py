@@ -9,7 +9,14 @@ from djoser.serializers import (
     UserCreateSerializer as DjoserUserCreateSerializer,
 )
 
-from recipes.models import Ingredient, Tag, Recipe, RecipeIngredient, Favorite
+from recipes.models import (
+    Ingredient,
+    Tag,
+    Recipe,
+    RecipeIngredient,
+    Favorite,
+    ShoppingCart,
+)
 from .services import add_ingredients_to_recipe
 
 User = get_user_model()
@@ -77,11 +84,29 @@ class FavoriteSerializer(serializers.ModelSerializer):
     # реализовать удаление рецепта из избранного
 
 
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    recipe = serializers.HiddenField(default=None)
+
+    def validate_recipe(self, value):
+        recipe_id = self.context["request"].parser_context["kwargs"][
+            "recipe_id"
+        ]
+        return get_object_or_404(Recipe, pk=recipe_id)
+
+    class Meta:
+        fields = ("user", "recipe")
+        model = ShoppingCart
+
+    # реализовать удаление рецепта из корзины
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = AuthorSerializer(read_only=True)
-    image = Base64ImageField(required=True)
     ingredients = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
+    image = Base64ImageField(required=True)
 
     class Meta:
         fields = (
@@ -89,6 +114,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             "tags",
             "author",
             "ingredients",
+            "is_favorited",
             "name",
             "image",
             "text",
@@ -110,6 +136,10 @@ class RecipeSerializer(serializers.ModelSerializer):
                 }
             )
         return ingredient_data
+
+    def get_is_favorited(self, obj):
+        request = self.context["request"]
+        return Favorite.objects.filter(user=request.user, recipe=obj).exists()
 
     def validate(self, data):
         tags_data = self.initial_data.get("tags")

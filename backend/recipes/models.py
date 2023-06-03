@@ -79,3 +79,24 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.recipe}"
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="shopping_cart"
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="shopping_cart"
+    )
+
+    class Meta:
+        unique_together = ["user", "recipe"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"],
+                name="unique_shopping_cart",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.recipe}"
