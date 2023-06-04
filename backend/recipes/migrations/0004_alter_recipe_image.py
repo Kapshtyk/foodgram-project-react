@@ -5,7 +5,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("recipes", "0003_alter_recipe_cooking_time_alter_tag_color_and_more"),
+        (
+            "recipes",
+            "0003_alter_recipe_cooking_time_alter_tag_color_and_more",
+        ),
     ]
 
     operations = [

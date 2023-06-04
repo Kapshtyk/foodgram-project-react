@@ -29,13 +29,17 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="recipes"
+        User,
+        on_delete=models.CASCADE,
+        related_name="recipes",
     )
     name = models.CharField(max_length=200)
     image = models.ImageField(upload_to="images/recipes/")
     text = models.TextField()
     ingredients = models.ManyToManyField(
-        Ingredient, through="RecipeIngredient", related_name="recipes"
+        Ingredient,
+        through="RecipeIngredient",
+        related_name="recipes",
     )
     tags = models.ManyToManyField(Tag, related_name="recipes")
     cooking_time = models.PositiveIntegerField(help_text="in minutes")
@@ -50,10 +54,14 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="recipe_ingredients"
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="recipe_ingredients",
     )
     ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE, related_name="recipe_ingredients"
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name="recipe_ingredients",
     )
     amount = models.FloatField()
 
@@ -66,10 +74,14 @@ class RecipeIngredient(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="favorites"
+        User,
+        on_delete=models.CASCADE,
+        related_name="favorites",
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="favorites"
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="favorites",
     )
 
     class Meta:
@@ -87,10 +99,14 @@ class Favorite(models.Model):
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="shopping_cart"
+        User,
+        on_delete=models.CASCADE,
+        related_name="shopping_cart",
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="shopping_cart"
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="shopping_cart",
     )
 
     class Meta:

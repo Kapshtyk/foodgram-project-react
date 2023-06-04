@@ -5,7 +5,10 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("recipes", "0006_shoppingcart_favorite_unique_favorite_and_more"),
+        (
+            "recipes",
+            "0006_shoppingcart_favorite_unique_favorite_and_more",
+        ),
     ]
 
     operations = [

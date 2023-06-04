@@ -1,42 +1,28 @@
-import base64
+from django.contrib.auth import get_user_model
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
-
+from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
-from djoser.serializers import (
-    UserCreateSerializer as DjoserUserCreateSerializer,
-)
 
-from recipes.models import (
-    Ingredient,
-    Tag,
-    Recipe,
-    RecipeIngredient,
-    Favorite,
-    ShoppingCart,
-)
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 from users.models import Subscription
 
+from .fields import Base64ImageField
 from .services import add_ingredients_to_recipe
 
 User = get_user_model()
 
 
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith("data:image"):
-            format, imgstr = data.split(";base64,")
-            ext = format.split("/")[-1]
-            data = ContentFile(base64.b64decode(imgstr), name="temp." + ext)
-
-        return super().to_internal_value(data)
-
-
-class UserSerializer(DjoserUserCreateSerializer):
-    class Meta(DjoserUserCreateSerializer.Meta):
-        fields = ("email", "username", "first_name", "last_name", "password")
+class UserSerializer(UserCreateSerializer):
+    class Meta(UserCreateSerializer.Meta):
+        fields = (
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "password",
+        )
         extra_kwargs = {
             "password": {"write_only": True},
             "email": {"required": True},
@@ -60,13 +46,23 @@ class TagSerializer(serializers.ModelSerializer):
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ("id", "name", "measurement_unit")
+        fields = (
+            "id",
+            "name",
+            "measurement_unit",
+        )
 
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("email", "id", "username", "first_name", "last_name")
+        fields = (
+            "email",
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+        )
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -74,16 +70,12 @@ class FavoriteSerializer(serializers.ModelSerializer):
     recipe = serializers.HiddenField(default=None)
 
     def validate_recipe(self, value):
-        recipe_id = self.context["request"].parser_context["kwargs"][
-            "recipe_id"
-        ]
+        recipe_id = self.context["request"].parser_context["kwargs"]["pk"]
         return get_object_or_404(Recipe, pk=recipe_id)
 
     class Meta:
         fields = ("user", "recipe")
         model = Favorite
-
-    # реализовать удаление рецепта из избранного
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
@@ -91,16 +83,12 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     recipe = serializers.HiddenField(default=None)
 
     def validate_recipe(self, value):
-        recipe_id = self.context["request"].parser_context["kwargs"][
-            "recipe_id"
-        ]
+        recipe_id = self.context["request"].parser_context["kwargs"]["pk"]
         return get_object_or_404(Recipe, pk=recipe_id)
 
     class Meta:
         fields = ("user", "recipe")
         model = ShoppingCart
-
-    # реализовать удаление рецепта из корзины
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -130,15 +118,16 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_ingredients(self, obj):
         recipe_ingredients = RecipeIngredient.objects.filter(recipe=obj)
         ingredient_data = []
-        for recipe_ingredient in recipe_ingredients:
+        for ingredient in recipe_ingredients:
             ingredient_data.append(
                 {
-                    "id": recipe_ingredient.ingredient.id,
-                    "name": recipe_ingredient.ingredient.name,
-                    "measurement_unit": recipe_ingredient.ingredient.measurement_unit,
-                    "amount": recipe_ingredient.amount,
+                    "id": ingredient.ingredient.id,
+                    "name": ingredient.ingredient.name,
+                    "measurement_unit": ingredient.ingredient.measurement_unit,
+                    "amount": ingredient.amount,
                 }
             )
+
         return ingredient_data
 
     def get_is_favorited(self, obj):
@@ -171,6 +160,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         data["tags"] = tags_data
         data["ingredients"] = ingredients_data
+
         return data
 
     def create(self, validated_data):
@@ -181,6 +171,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(author=request.user, **validated_data)
         recipe.tags.set(tags)
         add_ingredients_to_recipe(recipe, ingredients)
+
         return recipe
 
     def update(self, instance, validated_data):
@@ -199,8 +190,15 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     author = serializers.HiddenField(default=None)
 
     def validate_author(self, value):
-        user_id = self.context["request"].parser_context["kwargs"]["user_id"]
+        user_id = self.context["request"].parser_context["kwargs"]["id"]
         return get_object_or_404(User, pk=user_id)
+
+    def validate(self, data):
+        if data["user"] == data["author"]:
+            raise serializers.ValidationError(
+                "You can't subscribe to yourself"
+            )
+        return data
 
     class Meta:
         fields = ("user", "author")
@@ -209,7 +207,12 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 class RecipeSmallSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("id", "name", "image", "cooking_time")
+        fields = (
+            "id",
+            "name",
+            "image",
+            "cooking_time",
+        )
         model = Recipe
 
 

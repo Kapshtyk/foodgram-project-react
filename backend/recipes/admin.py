@@ -1,10 +1,14 @@
 from django.contrib import admin
 
-from .models import Ingredient, Tag, Recipe, Favorite, ShoppingCart
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 
 
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ("pk", "name", "measurement_unit")
+    list_display = (
+        "pk",
+        "name",
+        "measurement_unit",
+    )
     search_fields = ("name",)
     list_filter = ("name",)
     empty_value_display = "-empty-"
@@ -32,7 +36,14 @@ class RecipeIngredientInline(admin.TabularInline):
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ("pk", "author", "name", "image", "text", "cooking_time")
+    list_display = (
+        "pk",
+        "author",
+        "name",
+        "image",
+        "text",
+        "cooking_time",
+    )
     search_fields = ("name",)
     list_filter = ("name",)
     empty_value_display = "-empty-"
