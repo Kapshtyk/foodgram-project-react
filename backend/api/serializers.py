@@ -17,6 +17,8 @@ from recipes.models import (
     Favorite,
     ShoppingCart,
 )
+from users.models import Subscription
+
 from .services import add_ingredients_to_recipe
 
 User = get_user_model()
@@ -106,6 +108,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField(required=True)
 
     class Meta:
@@ -115,6 +118,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             "author",
             "ingredients",
             "is_favorited",
+            "is_in_shopping_cart",
             "name",
             "image",
             "text",
@@ -132,7 +136,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                     "id": recipe_ingredient.ingredient.id,
                     "name": recipe_ingredient.ingredient.name,
                     "measurement_unit": recipe_ingredient.ingredient.measurement_unit,
-                    "amount": recipe_ingredient.quantity,
+                    "amount": recipe_ingredient.amount,
                 }
             )
         return ingredient_data
@@ -140,6 +144,12 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         request = self.context["request"]
         return Favorite.objects.filter(user=request.user, recipe=obj).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context["request"]
+        return ShoppingCart.objects.filter(
+            user=request.user, recipe=obj
+        ).exists()
 
     def validate(self, data):
         tags_data = self.initial_data.get("tags")
@@ -178,7 +188,67 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags = Tag.objects.filter(id__in=tag_ids)
         ingredients = validated_data.pop("ingredients", [])
         instance.tags.set(tags)
+        instance.recipe_ingredients.all().delete()
         add_ingredients_to_recipe(instance, ingredients)
+
         return super().update(instance, validated_data)
 
-    # реализовать удаление рецепта
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    author = serializers.HiddenField(default=None)
+
+    def validate_author(self, value):
+        user_id = self.context["request"].parser_context["kwargs"]["user_id"]
+        return get_object_or_404(User, pk=user_id)
+
+    class Meta:
+        fields = ("user", "author")
+        model = Subscription
+
+
+class RecipeSmallSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ("id", "name", "image", "cooking_time")
+        model = Recipe
+
+
+class SubscriptionListSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source="author.email")
+    id = serializers.IntegerField(source="author.id")
+    username = serializers.CharField(source="author.username")
+    first_name = serializers.CharField(source="author.first_name")
+    last_name = serializers.CharField(source="author.last_name")
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Subscription
+        fields = (
+            "email",
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "is_subscribed",
+            "recipes",
+            "recipes_count",
+        )
+
+    def get_recipes(self, obj):
+        recipes = Recipe.objects.filter(author=obj.author)
+        request = self.context["request"]
+        limit = request.query_params.get("recipes_limit")
+        if limit:
+            recipes = recipes[: int(limit)]
+        return RecipeSmallSerializer(recipes, many=True).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj.author).count()
+
+    def get_is_subscribed(self, obj):
+        request = self.context["request"]
+        return Subscription.objects.filter(
+            user=request.user, author=obj.author
+        ).exists()

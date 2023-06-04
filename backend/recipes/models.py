@@ -49,15 +49,19 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    quantity = models.FloatField()
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="recipe_ingredients"
+    )
+    ingredient = models.ForeignKey(
+        Ingredient, on_delete=models.CASCADE, related_name="recipe_ingredients"
+    )
+    amount = models.FloatField()
 
     class Meta:
         verbose_name_plural = "Recipe Ingredients"
 
     def __str__(self):
-        return f"{self.ingredient} ({self.quantity})"
+        return f"{self.ingredient} ({self.amount})"
 
 
 class Favorite(models.Model):

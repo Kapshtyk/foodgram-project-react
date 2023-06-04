@@ -27,9 +27,7 @@ class Command(BaseCommand):
                     f"Data already exists in {model._meta.verbose_name_plural}"
                 )
                 continue
-            file_path = os.path.join(
-                settings.BASE_DIR, "..", "data", file_name
-            )
+            file_path = os.path.join(settings.BASE_DIR, "data", file_name)
             with open(file_path, "r") as file:
                 data = json.load(file)
             model.objects.bulk_create(

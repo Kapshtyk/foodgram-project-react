@@ -7,6 +7,8 @@ from api.views import (
     TagViewSet,
     RecipeViewSet,
     ShoppingCartViewSet,
+    IngredientViewSet,
+    SubscriptionViewSet,
 )
 
 app_name = "api"
@@ -23,9 +25,15 @@ router.register(
     ShoppingCartViewSet,
     basename="shopping_cart",
 )
+router.register(
+    r"users/(?P<user_id>[\d.]+)/subscribe",
+    SubscriptionViewSet,
+    basename="subscribe",
+)
 router.register("recipes", RecipeViewSet, basename="recipes")
 router.register("tags", TagViewSet, basename="tags")
 router.register("users", UserViewSet, basename="users")
+router.register("ingredients", IngredientViewSet, basename="ingredients")
 
 urlpatterns = (
     path("", include(router.urls)),
