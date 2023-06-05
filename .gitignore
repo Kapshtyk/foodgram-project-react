@@ -133,3 +133,7 @@ dmypy.json
 
 
 requirements.in
+
+# frontend
+node_modules/
+.yarn/
