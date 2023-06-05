@@ -1,9 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status
 from rest_framework.response import Response
-from recipes.models import Recipe
 
-from recipes.models import Ingredient, RecipeIngredient
+from recipes.models import Ingredient, Recipe, RecipeIngredient
 
 
 def add_ingredients_to_recipe(recipe, ingredients):
@@ -35,13 +34,17 @@ class RecipeFilter(filters.BaseFilterBackend):
 
         return queryset
 
+
 def process_recipe_saving(request, pk, serializer, model):
     recipe = get_object_or_404(Recipe, id=pk)
     if request.method == "POST":
-        serializer = serializer(data={
-            "recipe": recipe.id,
-            "user": request.user.id,
-        }, context={"request": request})
+        serializer = serializer(
+            data={
+                "recipe": recipe.id,
+                "user": request.user.id,
+            },
+            context={"request": request},
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)

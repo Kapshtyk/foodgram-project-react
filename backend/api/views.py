@@ -14,10 +14,11 @@ from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeSerializer, ShoppingCartSerializer,
                              SubscriptionListSerializer,
                              SubscriptionSerializer, TagSerializer)
-from .services import RecipeFilter, process_recipe_saving
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 from users.models import Subscription
+
+from .services import RecipeFilter, process_recipe_saving
 
 User = get_user_model()
 
@@ -87,8 +88,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post", "delete"])
     def shopping_cart(self, request, pk):
-        return process_recipe_saving(request, pk, ShoppingCartSerializer, ShoppingCart)
-        
+        return process_recipe_saving(
+            request, pk, ShoppingCartSerializer, ShoppingCart
+        )
+
     @action(detail=False, methods=["get"])
     def download_shopping_cart(self, request):
         shopping_carts = ShoppingCart.objects.filter(user=request.user)
@@ -111,25 +114,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     }
 
         response = HttpResponse(content_type="application/pdf")
-        response[
-            "Content-Disposition"
-        ] = 'attachment; filename="ingredients.pdf"'
+        response["Content-Disposition"] = 'attachment; filename="ingredients.pdf"'
 
         p = canvas.Canvas(response, pagesize=A4)
-        p.setFont("Helvetica", 14)
 
         y = 700
-        for (
-            ingredient_name,
-            ingredient_info,
-        ) in ingredients.items():
+        for ingredient_name, ingredient_info in ingredients.items():
             amount = ingredient_info["amount"]
             units = ingredient_info["units"]
-            p.drawString(
-                100,
-                y,
-                f"{ingredient_name}: {amount} {units}",
-            )
+            p.drawString(100, y, f"{ingredient_name}: {amount} {units}")
             y -= 20
 
         p.showPage()
