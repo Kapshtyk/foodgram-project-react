@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status
 from rest_framework.response import Response
 
 from recipes.models import Ingredient, Recipe, RecipeIngredient
+
+User = get_user_model()
 
 
 def add_ingredients_to_recipe(recipe, ingredients):

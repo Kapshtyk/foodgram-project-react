@@ -3,13 +3,16 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DjoserUserViewSet
 from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeSerializer, ShoppingCartSerializer,
                              SubscriptionListSerializer,
@@ -25,7 +28,6 @@ User = get_user_model()
 
 class UserViewSet(DjoserUserViewSet):
     http_method_names = ["get", "post", "delete"]
-    pagination_class = PageNumberPagination
 
     @action(detail=True, methods=["post", "delete"])
     def subscribe(self, request, id):
@@ -61,20 +63,19 @@ class UserViewSet(DjoserUserViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = None
     http_method_names = ["get"]
     pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (AllowAny,)
     filter_backends = [
         filters.OrderingFilter,
         RecipeFilter,
     ]
+    permission_classes = (IsAdminOrReadOnly, IsOwnerOrReadOnly)
     http_method_names = [
         "get",
         "post",
@@ -82,17 +83,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
         "patch",
     ]
 
-    @action(detail=True, methods=["post", "delete"])
+    def get_queryset(self):
+        return Recipe.objects.filter(author__is_active=True)
+
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        permission_classes=[IsAuthenticated],
+    )
     def favorite(self, request, pk):
         return process_recipe_saving(request, pk, FavoriteSerializer, Favorite)
 
-    @action(detail=True, methods=["post", "delete"])
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        permission_classes=[IsAuthenticated],
+    )
     def shopping_cart(self, request, pk):
         return process_recipe_saving(
             request, pk, ShoppingCartSerializer, ShoppingCart
         )
 
-    @action(detail=False, methods=["get"])
+    @action(
+        detail=False, methods=["get"], permission_classes=[IsAuthenticated]
+    )
     def download_shopping_cart(self, request):
         shopping_carts = ShoppingCart.objects.filter(user=request.user)
 
@@ -113,8 +127,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                         "units": units,
                     }
 
+        pdfmetrics.registerFont(TTFont("Slimamif", "Slimamif.ttf", "UTF-8"))
         response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = 'attachment; filename="ingredients.pdf"'
+        response[
+            "Content-Disposition"
+        ] = 'attachment; filename="ingredients.pdf"'
 
         p = canvas.Canvas(response, pagesize=A4)
 
@@ -134,7 +151,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ("^name",)
     http_method_names = ["get"]

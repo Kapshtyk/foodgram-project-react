@@ -1,11 +1,11 @@
 from django.contrib import admin
+from django.db.models import Count
 
 from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 
 
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
-        "pk",
         "name",
         "measurement_unit",
     )
@@ -19,7 +19,7 @@ admin.site.register(Ingredient, IngredientAdmin)
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ("pk", "name", "color", "slug")
+    list_display = ("name", "color", "slug")
     search_fields = ("name",)
     list_filter = ("name",)
     empty_value_display = "-empty-"
@@ -37,25 +37,31 @@ class RecipeIngredientInline(admin.TabularInline):
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
-        "pk",
-        "author",
         "name",
-        "image",
-        "text",
-        "cooking_time",
+        "author",
+        "total_favorites",
     )
     search_fields = ("name",)
-    list_filter = ("name",)
+    list_filter = ("name", "author", "tags")
     empty_value_display = "-empty-"
     ordering = ("pk",)
     inlines = [RecipeIngredientInline]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.annotate(total_favorites=Count("favorites"))
+
+    def total_favorites(self, obj):
+        return obj.total_favorites
+
+    total_favorites.short_description = "Total Favorites"
 
 
 admin.site.register(Recipe, RecipeAdmin)
 
 
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ("pk", "user", "recipe")
+    list_display = ("user", "recipe")
     search_fields = ("user",)
     list_filter = ("user",)
     empty_value_display = "-empty-"
@@ -66,7 +72,7 @@ admin.site.register(Favorite, FavoriteAdmin)
 
 
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ("pk", "user", "recipe")
+    list_display = ("user", "recipe")
     search_fields = ("user",)
     list_filter = ("user",)
     empty_value_display = "-empty-"
