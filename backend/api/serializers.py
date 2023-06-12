@@ -224,7 +224,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         tags = validated_data.pop("tags")
-        ingredients = validated_data.pop("ingredients")
+        ingredients = validated_data.pop("recipe_ingredients")
         instance.tags.set(tags)
         instance.recipe_ingredients.all().delete()
         add_ingredients_to_recipe(instance, ingredients)
