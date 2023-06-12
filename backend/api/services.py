@@ -1,22 +1,25 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status
 from rest_framework.response import Response
 
-from recipes.models import Ingredient, Recipe, RecipeIngredient
+from recipes.models import Recipe, RecipeIngredient
 
 User = get_user_model()
 
 
+@transaction.atomic
 def add_ingredients_to_recipe(recipe, ingredients):
-    for ingredient_data in ingredients:
-        amount = ingredient_data["amount"]
-        ingredient = Ingredient.objects.get(id=ingredient_data["id"])
-        RecipeIngredient.objects.create(
+    recipe_ingredients = [
+        RecipeIngredient(
             recipe=recipe,
-            ingredient=ingredient,
-            amount=amount,
+            ingredient=ingredient_data["ingredient"],
+            amount=ingredient_data["amount"],
         )
+        for ingredient_data in ingredients
+    ]
+    RecipeIngredient.objects.bulk_create(recipe_ingredients)
 
 
 class RecipeFilter(filters.BaseFilterBackend):

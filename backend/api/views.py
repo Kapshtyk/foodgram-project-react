@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.db.models import IntegerField, Sum
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DjoserUserViewSet
@@ -12,15 +14,13 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
-from api.serializers import (FavoriteSerializer, IngredientSerializer,
-                             RecipeSerializer, ShoppingCartSerializer,
-                             SubscriptionListSerializer,
-                             SubscriptionSerializer, TagSerializer)
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription
-
+from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeCreateSerializer, RecipeSerializer,
+                          ShoppingCartSerializer, SubscriptionListSerializer,
+                          SubscriptionSerializer, TagSerializer)
 from .services import RecipeFilter, process_recipe_saving
 
 User = get_user_model()
@@ -70,7 +70,6 @@ class TagViewSet(viewsets.ModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    serializer_class = RecipeSerializer
     filter_backends = [
         filters.OrderingFilter,
         RecipeFilter,
@@ -85,6 +84,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Recipe.objects.filter(author__is_active=True)
+
+    def get_serializer_class(self):
+        if self.action in ["create", "partial_update"]:
+            return RecipeCreateSerializer
+        return RecipeSerializer
 
     @action(
         detail=True,
@@ -108,24 +112,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=False, methods=["get"], permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
-        shopping_carts = ShoppingCart.objects.filter(user=request.user)
-
-        ingredients = {}
-        for shopping_cart in shopping_carts:
-            recipe = shopping_cart.recipe
-            recipe_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
-
-            for recipe_ingredient in recipe_ingredients:
-                ingredient = recipe_ingredient.ingredient
-                units = ingredient.measurement_unit
-                amount = recipe_ingredient.amount
-                if ingredient.name in ingredients:
-                    ingredients[ingredient.name]["amount"] += amount
-                else:
-                    ingredients[ingredient.name] = {
-                        "amount": amount,
-                        "units": units,
-                    }
+        shopping_carts = (
+            ShoppingCart.objects.filter(user=request.user)
+            .values_list(
+                "recipe__recipe_ingredients__ingredient__name",
+                "recipe__recipe_ingredients__ingredient__measurement_unit",
+            )
+            .annotate(
+                amount=Coalesce(
+                    Sum(
+                        "recipe__recipe_ingredients__amount",
+                        output_field=IntegerField(),
+                    ),
+                    0,
+                )
+            )
+        )
 
         pdfmetrics.registerFont(TTFont("Slimamif", "Slimamif.ttf", "UTF-8"))
         response = HttpResponse(content_type="application/pdf")
@@ -136,9 +138,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         p = canvas.Canvas(response, pagesize=A4)
 
         y = 700
-        for ingredient_name, ingredient_info in ingredients.items():
-            amount = ingredient_info["amount"]
-            units = ingredient_info["units"]
+        for ingredient_name, units, amount in shopping_carts:
             p.drawString(100, y, f"{ingredient_name}: {amount} {units}")
             y -= 20
 
