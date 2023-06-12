@@ -77,7 +77,7 @@ flake8==5.0.4
     #   flake8-broken-line
     #   flake8-isort
     #   pep8-naming
-flake8-broken-line==1.0.0
+flake8-broken-line==0.6.0
     # via -r requirements.in
 flake8-isort==5.0.3
     # via -r requirements.in
