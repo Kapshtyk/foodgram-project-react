@@ -4,11 +4,11 @@ from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 
+from api.fields import Base64ImageField
+from api.services import add_ingredients_to_recipe
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 from users.models import Subscription
-from .fields import Base64ImageField
-from .services import add_ingredients_to_recipe
 
 User = get_user_model()
 

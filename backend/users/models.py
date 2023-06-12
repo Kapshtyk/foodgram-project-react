@@ -7,16 +7,16 @@ class User(AbstractUser):
     email = models.EmailField(
         unique=True,
         max_length=254,
-        verbose_name="email",
+        verbose_name="электронная почта",
     )
     username = models.CharField(
         unique=True,
         max_length=150,
-        verbose_name="username",
+        verbose_name="юзернейм",
     )
-    first_name = models.CharField(max_length=150, verbose_name="first_name")
-    last_name = models.CharField(max_length=150, verbose_name="last_name")
-    password = models.CharField(max_length=150, verbose_name="password")
+    first_name = models.CharField(max_length=150, verbose_name="имя")
+    last_name = models.CharField(max_length=150, verbose_name="фамилия")
+    password = models.CharField(max_length=150, verbose_name="пароль")
 
     REQUIRED_FIELDS = [
         "first_name",
@@ -26,6 +26,8 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
 
     class Meta:
+        verbose_name = "пользователь"
+        verbose_name_plural = "пользователи"
         ordering = ("email",)
 
     def __str__(self):
@@ -37,14 +39,18 @@ class Subscription(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="follower",
+        verbose_name="автор",
     )
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="following",
+        verbose_name="подписчик",
     )
 
     class Meta:
+        verbose_name = "подписка"
+        verbose_name_plural = "подписки"
         constraints = [
             models.UniqueConstraint(
                 fields=["author", "user"],

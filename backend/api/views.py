@@ -14,14 +14,15 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from api.serializers import (FavoriteSerializer, IngredientSerializer,
+                             RecipeCreateSerializer, RecipeSerializer,
+                             ShoppingCartSerializer,
+                             SubscriptionListSerializer,
+                             SubscriptionSerializer, TagSerializer)
+from api.services import RecipeFilter, process_recipe_saving
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription
-from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
-from .serializers import (FavoriteSerializer, IngredientSerializer,
-                          RecipeCreateSerializer, RecipeSerializer,
-                          ShoppingCartSerializer, SubscriptionListSerializer,
-                          SubscriptionSerializer, TagSerializer)
-from .services import RecipeFilter, process_recipe_saving
 
 User = get_user_model()
 
