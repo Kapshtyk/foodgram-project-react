@@ -23,7 +23,7 @@ jobs:
           with:
             push: true
             file: ./backend/Dockerfile
-            tags: kapshtykas/foodgram-backend
+            tags: ${{ secrets.USERNAME_DOCKER_HUB }}/foodgram-backend
   deploy:
     if: github.ref_name == ${{ vars.CONDITION }} 
     runs-on: ubuntu-latest
