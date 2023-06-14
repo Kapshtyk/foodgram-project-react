@@ -4,7 +4,7 @@ from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              ShoppingCartSerializer,
                              SubscriptionListSerializer,
                              SubscriptionSerializer, TagSerializer)
-from api.services import process_recipe_saving, RecipeFilter 
+from api.services import RecipeFilter, process_recipe_saving
 from django.contrib.auth import get_user_model
 from django.db.models import IntegerField, Sum
 from django.db.models.functions import Coalesce
