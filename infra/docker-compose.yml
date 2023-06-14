@@ -7,7 +7,7 @@ services:
     env_file:
       - ./.env
   backend:
-    build: ../backend/
+    image: kapshtykas/foodgram-backend
     restart: always
     volumes:
       - static_value:/app/static/
@@ -17,9 +17,7 @@ services:
     env_file:
       - ./.env
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: kapshtykas/foodgram-frontend
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
