@@ -6,6 +6,6 @@ COPY ./ .
 
 RUN pip3 install -r backend/requirements.txt --no-cache-dir
 
-RUN ls -la
+RUN chmod +x backend/migrate_run_app.sh
 
-CMD ["gunicorn", "backend.foodgram.wsgi:application", "--bind", "0:8000" ]
+ENTRYPOINT ["/app/backend/migrate_run_app.sh"]
