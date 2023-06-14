@@ -3,7 +3,6 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status
 from rest_framework.response import Response
-
 from recipes.models import Recipe, RecipeIngredient
 
 User = get_user_model()
