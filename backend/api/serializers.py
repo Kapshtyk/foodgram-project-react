@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer
+from rest_framework import serializers
 
 from api.fields import Base64ImageField
 from api.services import add_ingredients_to_recipe
