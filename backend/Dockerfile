@@ -14,7 +14,7 @@ RUN pwd
 
 RUN ls -la
 
-RUN pip3 install -r requirements.txt --no-cache-dir
+RUN pip3 install -r backend/requirements.txt --no-cache-dir
 
 RUN chmod +x migrate_run_app.sh
 
