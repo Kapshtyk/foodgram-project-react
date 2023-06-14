@@ -8,4 +8,4 @@ RUN cd backend
 
 RUN pip3 install -r backend/requirements.txt --no-cache-dir
 
-CMD ["gunicorn", "backend/foodgram/foodgram.wsgi:application", "--bind", "0:8000" ]
+CMD ["gunicorn", "backend/foodgram.wsgi:application", "--bind", "0:8000" ]
