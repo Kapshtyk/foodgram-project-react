@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from recipes.models import Recipe, RecipeIngredient
 from rest_framework import filters, status
 from rest_framework.response import Response
-from recipes.models import Recipe, RecipeIngredient
 
 User = get_user_model()
 
