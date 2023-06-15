@@ -10,3 +10,7 @@ RUN npm install
 RUN npm run build
 CMD cp -r build result_build
 RUN ls -la
+RUN pwd
+WORKDIR /app
+RUN pwd
+RUN ls -la
