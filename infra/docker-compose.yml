@@ -1,11 +1,31 @@
 version: '3.3'
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/:/app/result_build/
   db:
     image: postgres:13.4
+    depends_on:
+      - frontend
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
+  nginx:
+    image: nginx:1.19.3
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/build:/usr/share/nginx/html/
+      - ./docs/:/usr/share/nginx/html/api/docs/
+      - static_value:/usr/share/nginx/html/backend_static/
+      - media_value:/usr/share/nginx/html/media/
+    depends_on:
+      - frontend
   backend:
     image: kapshtykas/foodgram-backend
     restart: always
@@ -13,27 +33,10 @@ services:
       - static_value:/app/backend/backend_static/
       - media_value:/app/backend/media/
     depends_on:
-      - db
+      - nginx
     env_file:
       - ./.env
-  frontend:
-    image: kapshtykas/foodgram-frontend
-    volumes:
-      - ../frontend/:/app/frontend/result_build/
 
-  nginx:
-    image: nginx:1.19.3
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
-      - ../docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
-      - static_value:/usr/share/nginx/html/backend_static/
-      - media_value:/usr/share/nginx/html/media/
-    depends_on:
-      - backend
 
 volumes:
   postgres_data:
