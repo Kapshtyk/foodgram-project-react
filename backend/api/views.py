@@ -125,15 +125,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         )
 
-        response = HttpResponse(content_type="text/plain")
-        response[
-            "Content-Disposition"
-        ] = 'attachment; filename="ingredients.txt"'
-
         with open("ingredients.txt", "w") as file:
             file.write("Список покупок" + "\n")
             for ingredient_name, units, amount in shopping_carts:
                 file.write(f"{ingredient_name}: {amount} {units}" + "\n")
+
+            response = HttpResponse(file, content_type="text/plain")
+            response[
+            "Content-Disposition"
+            ] = 'attachment; filename="ingredients.txt"'
 
         return response
 
