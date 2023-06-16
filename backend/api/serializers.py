@@ -188,7 +188,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        print(data["recipe_ingredients"])
         data["tags"] = [item.id for item in data.get("tags")]
         if not data.get("tags"):
             raise serializers.ValidationError("Recipe must have tags")

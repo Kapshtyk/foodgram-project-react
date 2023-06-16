@@ -12,10 +12,6 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DjoserUserViewSet
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -129,21 +125,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         )
 
-        pdfmetrics.registerFont(TTFont("Slimamif", "Slimamif.ttf", "UTF-8"))
-        response = HttpResponse(content_type="application/pdf")
+        response = HttpResponse(content_type="text/plain")
         response[
             "Content-Disposition"
-        ] = 'attachment; filename="ingredients.pdf"'
+        ] = 'attachment; filename="ingredients.txt"'
 
-        p = canvas.Canvas(response, pagesize=A4)
-
-        y = 700
-        for ingredient_name, units, amount in shopping_carts:
-            p.drawString(100, y, f"{ingredient_name}: {amount} {units}")
-            y -= 20
-
-        p.showPage()
-        p.save()
+        with open("ingredients.txt", "w") as file:
+            file.write("Список покупок" + "\n")
+            for ingredient_name, units, amount in shopping_carts:
+                file.write(f"{ingredient_name}: {amount} {units}" + "\n")
 
         return response
 
