@@ -132,7 +132,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
             response = HttpResponse(file, content_type="text/plain")
             response[
-            "Content-Disposition"
+                "Content-Disposition"
             ] = 'attachment; filename="ingredients.txt"'
 
         return response
