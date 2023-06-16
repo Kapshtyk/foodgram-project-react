@@ -130,7 +130,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ingredients_list.append(f"{ingredient_name}: {amount} {units}")
 
         response = HttpResponse(
-            "/n".join(ingredients_list), content_type="text/plain"
+            "\n".join(ingredients_list), content_type="text/plain"
         )
         response[
             "Content-Disposition"
