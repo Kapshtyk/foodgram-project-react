@@ -1,3 +1,15 @@
+from django.contrib.auth import get_user_model
+from django.db.models import IntegerField, Sum
+from django.db.models.functions import Coalesce
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from djoser.views import UserViewSet as DjoserUserViewSet
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
@@ -5,18 +17,7 @@ from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              SubscriptionListSerializer,
                              SubscriptionSerializer, TagSerializer)
 from api.services import RecipeFilter, process_recipe_saving
-from django.contrib.auth import get_user_model
-from django.db.models import IntegerField, Sum
-from django.db.models.functions import Coalesce
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet as DjoserUserViewSet
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from rest_framework import filters, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from users.models import Subscription
 
 User = get_user_model()

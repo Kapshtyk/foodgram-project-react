@@ -20,6 +20,14 @@ FoodGram - это онлайн-платформа, где пользовател
 
 ## Установка и запуск
 
+### Общий доступ
+
+На настоящий момент сайт доступен по следующему адресу: [http://158.160.69.32](http://158.160.69.32/recipes)
+
+Для доступа к части функционала необходимо зарегистрироваться, либо можно воспользоваться логином admin@admin.ru и паролем admin для доступа к сайту с правами администратора.
+
+### Локальная версия сайта
+
 1. Установите Docker и Docker Compose, если они еще не установлены.
 2. Склонируйте репозиторий:
 ```
@@ -35,12 +43,19 @@ cd foodgram-project-react/infra
 docker-compose build
 docker-compose up
 ```
+6.    Для наполнения локальной версии сайта контентом необходимо ввести в терминале следующие команды:
+```
+docker-compose exec backend python manage.py migrate
+docker-compose exec backend python manage.py collectstatic --no-input
+docker-compose exec backend python manage.py loaddata database.json
+```
 
-    
+7. Сайт будет доступен по адресу [localhost](localhost). Для доступа к сайту необходимо зарегистрироваться через специальную форму, находящуюся по адресу [localhost/signup](http://localhost/signup). Для доступа к панели администратора необходимо создать суперюзера, для чего в терминале необходимо набрать
+`docker-compose exec backend python manage.py createsuperuser`, после чего заполнить необходимые поля, либо можно воспользоваться логином admin@admin.ru и паролем admin.
 
-6. Сайт будет доступен по адресу `localhost`. Для доступа к сайту необходимо зарегистрироваться через специальную форму, находящуюся по адресу `http://localhost/signup`. Для доступа к панели администратора необходимо создать суперюзера, для чего в терминале необходимо набрать
-`docker-compose exec backend python manage.py createsuperuser`, после чего заполнить необходимые поля.
+## Скриншот сайта
 
+![desktop](https://github.com/Kapshtak/foodgram-project-react/blob/main/screenshots/recipes.png)
 
 ## Благодарности
 

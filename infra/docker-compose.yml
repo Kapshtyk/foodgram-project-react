@@ -27,6 +27,7 @@ services:
     depends_on:
       - frontend
   backend:
+    platform: linux/amd64
     image: kapshtykas/foodgram-backend
     restart: always
     volumes:
