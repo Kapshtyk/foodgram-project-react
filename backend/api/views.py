@@ -10,7 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
+from api.permissions import IsAdminOrReadOnly, IsOwnerOrIsAdminOrReadOnly
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
                              ShoppingCartSerializer,
@@ -71,7 +71,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
         RecipeFilter,
     ]
-    permission_classes = (IsAdminOrReadOnly, IsOwnerOrReadOnly)
+    permission_classes = (IsOwnerOrIsAdminOrReadOnly,)
     http_method_names = [
         "get",
         "post",
