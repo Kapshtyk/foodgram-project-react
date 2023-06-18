@@ -16,7 +16,7 @@ from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              ShoppingCartSerializer,
                              SubscriptionListSerializer,
                              SubscriptionSerializer, TagSerializer)
-from api.services import RecipeFilter, process_recipe_saving
+from api.services import RecipeFilter, RecipePaginator, process_recipe_saving
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription
 
@@ -72,6 +72,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         RecipeFilter,
     ]
     permission_classes = (IsOwnerOrIsAdminOrReadOnly,)
+    pagination_class = RecipePaginator
     http_method_names = [
         "get",
         "post",

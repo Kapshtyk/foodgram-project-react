@@ -134,6 +134,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         fields = (
@@ -143,6 +144,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             "ingredients",
             "is_favorited",
             "is_in_shopping_cart",
+            "is_subscribed",
             "name",
             "image",
             "text",
@@ -163,6 +165,14 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return ShoppingCart.objects.filter(
             user=request.user, recipe=obj
+        ).exists()
+
+    def get_is_subscribed(self, obj):
+        request = self.context["request"]
+        if request.user.is_anonymous:
+            return False
+        return Subscription.objects.filter(
+            user=request.user, author=obj.author
         ).exists()
 
 

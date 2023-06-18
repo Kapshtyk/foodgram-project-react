@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from recipes.validators import validate_ingredient_amount
+
 User = get_user_model()
 
 
@@ -91,7 +93,7 @@ class RecipeIngredient(models.Model):
         related_name="recipe_ingredients",
         verbose_name="ингредиент",
     )
-    amount = models.FloatField()
+    amount = models.FloatField(validators=[validate_ingredient_amount])
 
     class Meta:
         verbose_name = "ингредиент рецепта"

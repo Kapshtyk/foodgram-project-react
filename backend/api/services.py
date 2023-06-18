@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from recipes.models import Recipe, RecipeIngredient
@@ -57,3 +58,8 @@ def process_recipe_saving(request, pk, serializer, model):
 
     model.objects.filter(recipe=recipe, user=request.user).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RecipePaginator(PageNumberPagination):
+    page_size = 6
+    page_size_query_param = "limit"
