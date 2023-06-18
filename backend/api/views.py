@@ -15,7 +15,8 @@ from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
                              ShoppingCartSerializer,
                              SubscriptionListSerializer,
-                             SubscriptionSerializer, TagSerializer, UserSerializer)
+                             SubscriptionSerializer, TagSerializer,
+                             UserSerializer)
 from api.services import RecipeFilter, RecipePaginator, process_recipe_saving
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription

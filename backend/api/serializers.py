@@ -24,7 +24,7 @@ class UserSerializer(UserCreateSerializer):
             "first_name",
             "last_name",
             "password",
-            "is_subscribed"
+            "is_subscribed",
         )
         extra_kwargs = {
             "password": {"write_only": True},
@@ -43,6 +43,7 @@ class UserSerializer(UserCreateSerializer):
         return Subscription.objects.filter(
             user=request.user, author=obj
         ).exists()
+
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
