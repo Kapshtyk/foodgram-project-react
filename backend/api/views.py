@@ -15,7 +15,7 @@ from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
                              ShoppingCartSerializer,
                              SubscriptionListSerializer,
-                             SubscriptionSerializer, TagSerializer)
+                             SubscriptionSerializer, TagSerializer, UserSerializer)
 from api.services import RecipeFilter, RecipePaginator, process_recipe_saving
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription
@@ -25,6 +25,7 @@ User = get_user_model()
 
 class UserViewSet(DjoserUserViewSet):
     http_method_names = ["get", "post", "delete"]
+    serializer_class = UserSerializer
 
     @action(detail=True, methods=["post", "delete"])
     def subscribe(self, request, id):

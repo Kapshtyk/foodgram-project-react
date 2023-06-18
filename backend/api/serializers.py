@@ -14,13 +14,17 @@ User = get_user_model()
 
 
 class UserSerializer(UserCreateSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
     class Meta(UserCreateSerializer.Meta):
         fields = (
             "email",
+            "id",
             "username",
             "first_name",
             "last_name",
             "password",
+            "is_subscribed"
         )
         extra_kwargs = {
             "password": {"write_only": True},
@@ -34,6 +38,11 @@ class UserSerializer(UserCreateSerializer):
             self.fields["password"].required = True
         return super().run_validation(data)
 
+    def get_is_subscribed(self, obj):
+        request = self.context["request"]
+        return Subscription.objects.filter(
+            user=request.user, author=obj
+        ).exists()
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
