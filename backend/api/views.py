@@ -7,7 +7,7 @@ from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from api.permissions import IsAdminOrReadOnly, IsOwnerOrIsAdminOrReadOnly
@@ -27,6 +27,7 @@ User = get_user_model()
 class UserViewSet(DjoserUserViewSet):
     http_method_names = ["get", "post", "delete"]
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     @action(detail=True, methods=["post", "delete"])
     def subscribe(self, request, id):
