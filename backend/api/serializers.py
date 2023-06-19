@@ -65,6 +65,8 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class AuthorSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = (
@@ -73,7 +75,16 @@ class AuthorSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "is_subscribed",
         )
+
+    def get_is_subscribed(self, obj):
+        request = self.context["request"]
+        if request.user.is_anonymous:
+            return False
+        return Subscription.objects.filter(
+            user=request.user, author=obj
+        ).exists()
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -290,7 +301,6 @@ class SubscriptionListSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="author.username")
     first_name = serializers.CharField(source="author.first_name")
     last_name = serializers.CharField(source="author.last_name")
-    is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
@@ -302,7 +312,6 @@ class SubscriptionListSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
-            "is_subscribed",
             "recipes",
             "recipes_count",
         )
@@ -317,9 +326,3 @@ class SubscriptionListSerializer(serializers.ModelSerializer):
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
-
-    def get_is_subscribed(self, obj):
-        request = self.context["request"]
-        return Subscription.objects.filter(
-            user=request.user, author=obj.author
-        ).exists()
