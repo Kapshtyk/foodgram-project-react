@@ -55,7 +55,7 @@ docker-compose exec backend python manage.py loaddata database.json
 
 ## Скриншот сайта
 
-![desktop](https://github.com/Kapshtak/foodgram-project-react/blob/main/screenshots/recipes.png)
+![desktop](https://github.com/Kapshtak/foodgram-project-react/blob/master/screenshots/recipes.png?raw=true)
 
 ## Благодарности
 
