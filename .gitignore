@@ -137,3 +137,5 @@ requirements.in
 # frontend
 node_modules/
 .yarn/
+
+.DS_Store
