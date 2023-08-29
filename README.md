@@ -61,4 +61,4 @@ docker-compose exec backend python manage.py loaddata database.json
 
 ## Author
 - LinkedIn - [Arseny Kapshtyk](https://www.linkedin.com/in/kapshtyk/)
-- Github - [@kapshtak](https://github.com/Kapshtak)
+- Github - [@kapshtak](https://github.com/Kapshtyk)
