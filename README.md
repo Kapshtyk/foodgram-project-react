@@ -1,4 +1,3 @@
-[![Django-app workflow](https://github.com/Kapshtak/foodgram-project-react/actions/workflows/foodgram-workflow.yml/badge.svg?branch=master)](https://github.com/Kapshtak/foodgram-project-react/actions/workflows/foodgram-workflow.yml)
 # FoodGram
 
 FoodGram is an online platform where users can create, view, and share recipes. Here, you can find a wide variety of recipes, add them to your favorites, and create a shopping list to purchase the necessary ingredients.
