@@ -21,18 +21,12 @@ FoodGram is an online platform where users can create, view, and share recipes. 
 
 ## Installation and Setup
 
-### Public Access
-
-Currently, the website is accessible at the following address: [http://158.160.69.32](http://158.160.69.32/recipes)
-
-To access certain functionalities, you need to register. Alternatively, you can use the login admin@admin.ru with the password admin to access the site with administrator rights.
-
 ### Local Deployment
 
 1. Install Docker and Docker Compose if you haven't already.
 2. Clone the repository:
 ```
-git clone https://github.com/Kapshtak/foodgram-project-react.git
+git clone https://github.com/Kapshtyk/foodgram-project-react.git
 ```
 3. Navigate to the project folder containing the infrastructure setup files:
 ```
